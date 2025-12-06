@@ -1,22 +1,72 @@
 const express = require('express');
+const User = require('../src/models/user.model');
 
 const app = express();
 const port = 8080;
 
-app.get('/', (req, res) => {
-    res.contentType('application/html');
-    res.status(200).send('<h1>Hello, World!</h1>');
-})
+app.use(express.json());
 
-app.get('/users', (req, res) => {
-    const users = [
-        { id: 1, name: 'Lorem Ipsum', email: 'loremipsum@gmail.com' },
-        { id: 2, name: 'Dolor Sit', email: 'dolorsit@gmail.com' },
-        { id: 3, name: 'Amet Consectetur', email: 'ametconsectetur@gmail.com' },
-    ];
+app.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
 
-    res.json(users).status(200);
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
 });
+
+app.post('/users', async (req, res) => {
+    try {
+        const user = await User.create(req.body);
+
+        res.status(201).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.get('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (user) {
+            res.status(200).json(user);
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+app.put('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        
+        if (user) {
+            res.status(200).json(user);
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.delete('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        
+        if (user) {
+            res.status(200).json({ message: 'User deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}); 
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
