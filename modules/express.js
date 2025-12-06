@@ -6,6 +6,22 @@ const port = 8080;
 
 app.use(express.json());
 
+app.set('view engine', 'ejs');
+app.set('views', 'src/views');
+
+// Middleware
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+
+    next();
+});
+
+app.get('/views/users', async (req, res) => {
+    const users = await User.find();
+
+    res.render('index', { users });
+});
+
 app.get('/users', async (req, res) => {
     try {
         const users = await User.find();
@@ -66,7 +82,7 @@ app.delete('/users/:id', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}); 
+});
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
